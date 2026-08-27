@@ -8,10 +8,10 @@ from app.models.entities import (
     Service,
     Staff,
     Vehicle,
-    VehicleJob, VehicleJobService, VehicleJobStatusHistory, StockMovement,
+    VehicleJob, VehicleJobService, VehicleJobStatusHistory, StockMovement, CompanyProfile, SystemSettings,
 )
 
 __all__ = [
     "AccountTransaction", "SaleItem", "Appointment", "AppointmentService", "Customer",
-    "Product", "Sale", "Service", "Staff", "Vehicle", "VehicleJob", "VehicleJobService", "VehicleJobStatusHistory", "StockMovement",
+    "Product", "Sale", "Service", "Staff", "Vehicle", "VehicleJob", "VehicleJobService", "VehicleJobStatusHistory", "StockMovement", "CompanyProfile", "SystemSettings",
 ]

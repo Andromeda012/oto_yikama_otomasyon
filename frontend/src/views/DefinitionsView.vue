@@ -7,7 +7,7 @@
 
     <div v-if="error" class="alert">{{ error }}</div>
     <div class="tabs">
-      <button v-for="tab in tabs" :key="tab.key" :class="{active: activeTab === tab.key}" @click="activeTab = tab.key">{{ tab.label }} <span>{{ counts[tab.key] }}</span></button>
+      <button v-for="tab in tabs" :key="tab.key" :class="{active: activeTab === tab.key}" @click="selectTab(tab.key)">{{ tab.label }} <span>{{ counts[tab.key] }}</span></button>
     </div>
 
     <section class="panel">
@@ -59,8 +59,12 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { createDefinition, deleteDefinition, getDefinitions, updateDefinition } from "../services/definitions";
+
+const route = useRoute();
+const router = useRouter();
 
 const tabs = [
   { key: "customers", label: "Müşteriler" },
@@ -70,6 +74,18 @@ const tabs = [
   { key: "products", label: "Ürün / Stok" },
 ];
 const activeTab = ref("customers"), search = ref(""), loading = ref(false), saving = ref(false), modal = ref(false), editing = ref(null), error = ref("");
+const routeToTab = { musteriler: "customers", araclar: "vehicles", hizmetler: "services", personel: "staff", urunler: "products" };
+const tabToRoute = Object.fromEntries(Object.entries(routeToTab).map(([key, value]) => [value, key]));
+
+function syncTabFromRoute() {
+  const requested = routeToTab[route.params.subsection];
+  if (requested) activeTab.value = requested;
+}
+function selectTab(tab) {
+  activeTab.value = tab;
+  router.replace({ name: "definitions", params: { subsection: tabToRoute[tab] } });
+}
+watch(() => route.params.subsection, syncTabFromRoute, { immediate: true });
 const data = reactive({ customers: [], vehicles: [], services: [], staff: [], products: [] });
 const blank = () => ({ first_name: "", last_name: "", phone: "", email: "", notes: "", customer_id: "", plate: "", brand: "", model: "", year: "", color: "", name: "", price: 0, duration_minutes: 30, description: "", is_active: true, role: "", sku: "", unit: "adet", purchase_price: 0, sale_price: 0, stock_quantity: 0, min_stock_level: 0 });
 const form = reactive(blank());
@@ -89,7 +105,11 @@ function openEdit(item) { editing.value = item; Object.assign(form, blank(), ite
 async function load() { loading.value = true; error.value = ""; try { Object.assign(data, await getDefinitions()); } catch (e) { error.value = e.message; } finally { loading.value = false; } }
 async function save() { saving.value = true; error.value = ""; try { if (editing.value) await updateDefinition(activeTab.value, editing.value.id, form); else await createDefinition(activeTab.value, form); modal.value = false; await load(); } catch (e) { error.value = e.message; } finally { saving.value = false; } }
 async function remove(item) { const message = activeTab.value === "services" || activeTab.value === "staff" || activeTab.value === "products" ? "Bu kaydı pasifleştirmek istediğinize emin misiniz?" : "Bu kaydı silmek istediğinize emin misiniz?"; if (!confirm(message)) return; try { await deleteDefinition(activeTab.value, item.id); await load(); } catch (e) { error.value = e.message; } }
-onMounted(load);
+onMounted(async () => {
+  syncTabFromRoute();
+  if (!route.params.subsection) router.replace({ name: "definitions", params: { subsection: "musteriler" } });
+  await load();
+});
 </script>
 
 <style scoped>

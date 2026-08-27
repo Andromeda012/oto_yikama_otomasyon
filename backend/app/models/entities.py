@@ -190,3 +190,39 @@ class StockMovement(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
     product = db.relationship("Product")
     sale = db.relationship("Sale")
+
+
+class CompanyProfile(db.Model):
+    __tablename__ = "company_profile"
+    id = db.Column(db.Integer, primary_key=True)
+    company_name = db.Column(db.String(150), nullable=False, default="")
+    legal_name = db.Column(db.String(200))
+    tax_number = db.Column(db.String(30))
+    tax_office = db.Column(db.String(120))
+    phone = db.Column(db.String(30))
+    email = db.Column(db.String(150))
+    website = db.Column(db.String(200))
+    address = db.Column(db.String(255))
+    city = db.Column(db.String(80))
+    district = db.Column(db.String(80))
+
+
+class SystemSettings(db.Model):
+    __tablename__ = "system_settings"
+    id = db.Column(db.Integer, primary_key=True)
+    timezone = db.Column(db.String(50), nullable=False, default="Europe/Istanbul")
+    currency = db.Column(db.String(10), nullable=False, default="TRY")
+    appointment_slot_minutes = db.Column(db.Integer, nullable=False, default=30)
+    appointment_advance_days = db.Column(db.Integer, nullable=False, default=30)
+    appointment_allow_past = db.Column(db.Boolean, nullable=False, default=False)
+    appointment_auto_job = db.Column(db.Boolean, nullable=False, default=True)
+    reminder_enabled = db.Column(db.Boolean, nullable=False, default=False)
+    reminder_hours_before = db.Column(db.Integer, nullable=False, default=24)
+    sms_enabled = db.Column(db.Boolean, nullable=False, default=False)
+    sms_provider = db.Column(db.String(50), default="")
+    sms_sender = db.Column(db.String(50), default="")
+    whatsapp_enabled = db.Column(db.Boolean, nullable=False, default=False)
+    whatsapp_provider = db.Column(db.String(50), default="")
+    whatsapp_phone = db.Column(db.String(30), default="")
+    business_hours = db.Column(db.Text, nullable=False, default="{}")
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
