@@ -1,5 +1,5 @@
 from app.models.entities import (
-    AccountTransaction,
+    AccountTransaction, SaleItem,
     Appointment,
     AppointmentService,
     Customer,
@@ -8,9 +8,10 @@ from app.models.entities import (
     Service,
     Staff,
     Vehicle,
+    VehicleJob, VehicleJobService, VehicleJobStatusHistory, StockMovement,
 )
 
 __all__ = [
-    "AccountTransaction", "Appointment", "AppointmentService", "Customer",
-    "Product", "Sale", "Service", "Staff", "Vehicle",
+    "AccountTransaction", "SaleItem", "Appointment", "AppointmentService", "Customer",
+    "Product", "Sale", "Service", "Staff", "Vehicle", "VehicleJob", "VehicleJobService", "VehicleJobStatusHistory", "StockMovement",
 ]
