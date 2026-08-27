@@ -9,7 +9,7 @@ Vercel-ready Flask + Vue application with an external MySQL database.
 - `api/index.py`: Vercel serverless entry point.
 - `vercel.json`: Vercel routing and function configuration.
 
-The Vue production build is included in the Flask serverless function. Flask serves the SPA and the `/api/*` endpoints from the same Vercel deployment.
+Vercel serves the Vue/Vite production build as the static frontend. Flask runs as a Python serverless function for the `/api/*` endpoints in the same Vercel deployment.
 
 ## Database
 
@@ -32,10 +32,10 @@ Use the repository root (`./`) as the Root Directory.
 
 Recommended project settings:
 
-- Framework Preset: `Other` (the project is a custom Flask + Vite monorepo)
+- Framework Preset: `Vite`
 - Build Command: `cd frontend && npm install && npm run build`
 - Root Directory: `./`
-- Do not set a separate Output Directory; Flask serves the generated Vue build.
+- Output Directory: `frontend/dist`
 - Add `DATABASE_URL` and `SECRET_KEY` as environment variables when the external MySQL database is ready.
 
 The deployment routes both the frontend and API through `api/index.py`.

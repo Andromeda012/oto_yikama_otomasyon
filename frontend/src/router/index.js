@@ -1,9 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
 import PlaceholderView from "../views/PlaceholderView.vue";
+import DashboardView from "../views/DashboardView.vue";
 import AppointmentView from "../views/AppointmentView.vue";
 
 const routes = [
-  { path: "/", name: "dashboard", component: PlaceholderView },
+  { path: "/", name: "dashboard", component: DashboardView },
   { path: "/hesabim", name: "account", component: PlaceholderView },
   { path: "/ayarlar/:subsection?", name: "settings", component: PlaceholderView },
   { path: "/tanimlar/:subsection?", name: "definitions", component: PlaceholderView },
