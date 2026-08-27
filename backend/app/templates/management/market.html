@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p class="note">Personelin hızlı satış yapacağı POS yerleşimi. Sepet, ödeme ve fiş henüz çalışmaz.</p>
+<section class="pos">
+  <div class="card">
+    <h2>Ürünler</h2>
+    <div class="products">
+      <article class="card product"><h3>Su</h3><p class="stat-hint">15 ₺</p></article>
+      <article class="card product"><h3>Kahve</h3><p class="stat-hint">40 ₺</p></article>
+      <article class="card product"><h3>Cila spreyi</h3><p class="stat-hint">120 ₺</p></article>
+      <article class="card product"><h3>Mikrofiber bez</h3><p class="stat-hint">85 ₺</p></article>
+      <article class="card product"><h3>Oto şampuanı</h3><p class="stat-hint">95 ₺</p></article>
+      <article class="card product"><h3>Hava tazeleyici</h3><p class="stat-hint">55 ₺</p></article>
+    </div>
+  </div>
+  <aside class="card">
+    <h2>Sepet</h2>
+    <ul class="list">
+      <li><span>Kahve × 2</span><span>80 ₺</span></li>
+      <li><span>Su × 1</span><span>15 ₺</span></li>
+    </ul>
+    <p class="stat-value">95 ₺</p>
+    <p class="stat-hint">Ödeme, miktar ve satış geçmişi sonraki aşamada eklenecek.</p>
+  </aside>
+</section>
+{% endblock %}

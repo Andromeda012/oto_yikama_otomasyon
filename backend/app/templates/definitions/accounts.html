@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p class="note">Müşteri, firma ve tedarikçi kartları. Borç / alacak hesapları sonraki aşamada gelecek.</p>
+<section class="grid grid-2">
+  <article class="card">
+    <h3>Müşteriler / firmalar</h3>
+    <ul class="list">
+      <li><span>Ahmet Kaya</span><span class="badge neutral">Müşteri</span></li>
+      <li><span>Mehmet Demir</span><span class="badge neutral">Müşteri</span></li>
+      <li><span>Filo A.Ş.</span><span class="badge ok">Firma</span></li>
+    </ul>
+  </article>
+  <article class="card">
+    <h3>Tedarikçiler</h3>
+    <ul class="list">
+      <li><span>Kimya Ltd.</span><span class="badge warn">Tedarikçi</span></li>
+      <li><span>Market Toptan</span><span class="badge warn">Tedarikçi</span></li>
+    </ul>
+  </article>
+</section>
+{% endblock %}

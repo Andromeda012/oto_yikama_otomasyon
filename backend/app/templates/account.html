@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p class="note">Hesap ve şirket bilgileri. Alanlar yalnızca yerleşim içindir; kayıt veya şifre işlemi yoktur.</p>
+
+<section class="grid grid-2">
+  <article class="card">
+    <h2>Kullanıcı bilgileri</h2>
+    <div class="field-grid">
+      <div class="field"><span>Ad</span><strong>Ayşe</strong></div>
+      <div class="field"><span>Soyad</span><strong>Yılmaz</strong></div>
+      <div class="field"><span>Hesap</span><strong>ayse.yilmaz</strong></div>
+      <div class="field"><span>Şifre yönetimi</span><strong>Henüz aktif değil</strong></div>
+      <div class="field"><span>Profil</span><strong>İşletme yöneticisi</strong></div>
+      <div class="field"><span>İletişim</span><strong>ayse@example.com</strong></div>
+    </div>
+  </article>
+  <article class="card">
+    <h2>Şirket bilgileri</h2>
+    <div class="field-grid">
+      <div class="field"><span>Şirket adı</span><strong>Deniz Oto Yıkama</strong></div>
+      <div class="field"><span>Telefon</span><strong>0212 000 00 00</strong></div>
+      <div class="field"><span>E-posta</span><strong>info@example.com</strong></div>
+      <div class="field"><span>Adres</span><strong>Örnek Mah. No:12 İstanbul</strong></div>
+      <div class="field"><span>Logo</span><strong>Yer tutucu</strong></div>
+      <div class="field"><span>Vergi bilgisi</span><strong>VKN 0000000000</strong></div>
+    </div>
+  </article>
+</section>
+{% endblock %}

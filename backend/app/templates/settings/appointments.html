@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p class="note">Çalışma saatleri, randevu süresi, kapasite ve çakışma kuralları burada yönetilecek.</p>
+<section class="grid grid-3">
+  <article class="card">
+    <h3>Çalışma saatleri</h3>
+    <p class="stat-hint">Örn. 09:00 – 19:00</p>
+  </article>
+  <article class="card">
+    <h3>Randevu süresi</h3>
+    <p class="stat-hint">Örn. 30 dakika</p>
+  </article>
+  <article class="card">
+    <h3>Kapasite</h3>
+    <p class="stat-hint">Aynı anda alınabilecek araç sayısı</p>
+  </article>
+  <article class="card">
+    <h3>Çakışma kuralları</h3>
+    <p class="stat-hint">Aynı saatte çakışan kayıtların nasıl ele alınacağı</p>
+  </article>
+</section>
+{% endblock %}
