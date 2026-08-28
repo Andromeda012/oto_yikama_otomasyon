@@ -1,6 +1,6 @@
 from decimal import Decimal, InvalidOperation
 from flask import Blueprint, jsonify, request
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.extensions import db
 from app.models import Customer, Product, Service, Staff, Vehicle
@@ -68,13 +68,17 @@ def product_json(p):
 
 @definitions_bp.get("")
 def list_definitions():
-    return jsonify({
-        "customers": [customer_json(x) for x in Customer.query.order_by(Customer.first_name, Customer.last_name).all()],
-        "vehicles": [vehicle_json(x) for x in Vehicle.query.order_by(Vehicle.plate).all()],
-        "services": [service_json(x) for x in Service.query.order_by(Service.name).all()],
-        "staff": [staff_json(x) for x in Staff.query.order_by(Staff.first_name, Staff.last_name).all()],
-        "products": [product_json(x) for x in Product.query.order_by(Product.name).all()],
-    })
+    try:
+        return jsonify({
+            "customers": [customer_json(x) for x in Customer.query.order_by(Customer.first_name, Customer.last_name).all()],
+            "vehicles": [vehicle_json(x) for x in Vehicle.query.order_by(Vehicle.plate).all()],
+            "services": [service_json(x) for x in Service.query.order_by(Service.name).all()],
+            "staff": [staff_json(x) for x in Staff.query.order_by(Staff.first_name, Staff.last_name).all()],
+            "products": [product_json(x) for x in Product.query.order_by(Product.name).all()],
+        })
+    except SQLAlchemyError as exc:
+        db.session.rollback()
+        return _json_error(f"Veritabanına bağlanılamadı: {exc}", 503)
 
 
 @definitions_bp.post("/customers")
@@ -280,6 +284,9 @@ def create_product():
     except IntegrityError:
         db.session.rollback()
         return _json_error("SKU zaten kayıtlı.", 409)
+    except SQLAlchemyError as exc:
+        db.session.rollback()
+        return _json_error(f"Veritabanına ürün kaydedilemedi: {exc}", 503)
     return jsonify(product_json(p)), 201
 
 
@@ -307,6 +314,9 @@ def update_product(item_id):
     except IntegrityError:
         db.session.rollback()
         return _json_error("SKU zaten kayıtlı.", 409)
+    except SQLAlchemyError as exc:
+        db.session.rollback()
+        return _json_error(f"Veritabanında ürün güncellenemedi: {exc}", 503)
     return jsonify(product_json(p))
 
 
