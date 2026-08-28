@@ -1,6 +1,6 @@
 from decimal import Decimal, InvalidOperation
 from flask import Blueprint, jsonify, request
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.extensions import db
 from app.models import Customer, Product, Service, Staff, Vehicle
@@ -277,9 +277,21 @@ def create_product():
     db.session.add(p)
     try:
         db.session.commit()
-    except IntegrityError:
+    except IntegrityError as exc:
         db.session.rollback()
-        return _json_error("SKU zaten kayıtlı.", 409)
+        # MySQL unique-key errors are handled as a user-facing validation error.
+        return jsonify({
+            "error": "SKU zaten kayıtlı.",
+            "error_type": type(exc).__name__,
+            "database_error": str(exc.orig) if getattr(exc, "orig", None) else str(exc),
+        }), 409
+    except SQLAlchemyError as exc:
+        db.session.rollback()
+        return jsonify({
+            "error": "Ürün veritabanına kaydedilemedi.",
+            "error_type": type(exc).__name__,
+            "database_error": str(exc.orig) if getattr(exc, "orig", None) else str(exc),
+        }), 500
     return jsonify(product_json(p)), 201
 
 
@@ -304,9 +316,20 @@ def update_product(item_id):
         return _json_error("Ürün değerlerini kontrol edin.")
     try:
         db.session.commit()
-    except IntegrityError:
+    except IntegrityError as exc:
         db.session.rollback()
-        return _json_error("SKU zaten kayıtlı.", 409)
+        return jsonify({
+            "error": "SKU zaten kayıtlı.",
+            "error_type": type(exc).__name__,
+            "database_error": str(exc.orig) if getattr(exc, "orig", None) else str(exc),
+        }), 409
+    except SQLAlchemyError as exc:
+        db.session.rollback()
+        return jsonify({
+            "error": "Ürün veritabanında güncellenemedi.",
+            "error_type": type(exc).__name__,
+            "database_error": str(exc.orig) if getattr(exc, "orig", None) else str(exc),
+        }), 500
     return jsonify(product_json(p))
 
 
