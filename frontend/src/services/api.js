@@ -13,6 +13,7 @@ export function apiFetch(path, options = {}) {
   const url = `${apiBaseUrl}${path}`;
   return fetch(url, {
     ...options,
+    credentials: "include",
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
   });
 }

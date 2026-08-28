@@ -1,4 +1,5 @@
 def register_blueprints(app):
+    from app.routes.auth import auth_bp
     from app.routes.health import health_bp
     from app.routes.appointments import appointments_bp
     from app.routes.definitions import definitions_bp
@@ -9,7 +10,9 @@ def register_blueprints(app):
     from app.routes.settings import settings_bp
     from app.routes.dashboard import dashboard_bp
     from app.routes.statistics import statistics_bp
+    from app.routes.public_customer import public_customer_bp
 
+    app.register_blueprint(auth_bp)
     app.register_blueprint(health_bp)
     app.register_blueprint(appointments_bp)
     app.register_blueprint(definitions_bp)
@@ -20,3 +23,4 @@ def register_blueprints(app):
     app.register_blueprint(settings_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(statistics_bp)
+    app.register_blueprint(public_customer_bp)

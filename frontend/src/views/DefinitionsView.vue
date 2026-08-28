@@ -1,7 +1,7 @@
 <template>
   <section class="definitions-page">
     <header class="page-header">
-      <div><p class="eyebrow">Sistem Tanımları</p><h1>Tanımlar</h1><p>Müşteri, araç, hizmet, personel ve ürün bilgilerini tek yerden yönetin.</p></div>
+      <div><p class="eyebrow">Sistem Tanımları</p><h1>Tanımlar</h1><p>Cari, araç, hizmet, personel ve ürün bilgilerini tek yerden yönetin.</p></div>
       <button class="primary" @click="openCreate">+ Yeni {{ activeLabel }}</button>
     </header>
 
@@ -38,7 +38,7 @@
           <label>Telefon *<input v-model="form.phone" required /></label><label>E-posta<input v-model="form.email" type="email" /></label><label>Not<textarea v-model="form.notes" rows="3" /></label>
         </template>
         <template v-else-if="activeTab === 'vehicles'">
-          <label>Müşteri *<select v-model.number="form.customer_id" required><option value="" disabled>Seçin</option><option v-for="c in data.customers" :key="c.id" :value="c.id">{{ c.name }} — {{ c.phone }}</option></select></label>
+          <label>Cari *<select v-model.number="form.customer_id" required><option value="" disabled>Seçin</option><option v-for="c in data.customers" :key="c.id" :value="c.id">{{ c.name }} — {{ c.phone }}</option></select></label>
           <div class="grid2"><label>Plaka *<input v-model="form.plate" required /></label><label>Renk<input v-model="form.color" /></label></div>
           <div class="grid2"><label>Marka<input v-model="form.brand" /></label><label>Model<input v-model="form.model" /></label></div><label>Model yılı<input v-model.number="form.year" type="number" min="1900" max="2100" /></label><label>Not<textarea v-model="form.notes" rows="3" /></label>
         </template>
@@ -67,14 +67,14 @@ const route = useRoute();
 const router = useRouter();
 
 const tabs = [
-  { key: "customers", label: "Müşteriler" },
+  { key: "customers", label: "Cari" },
   { key: "vehicles", label: "Araçlar" },
   { key: "services", label: "Hizmetler" },
   { key: "staff", label: "Personel" },
   { key: "products", label: "Ürün / Stok" },
 ];
 const activeTab = ref("customers"), search = ref(""), loading = ref(false), saving = ref(false), modal = ref(false), editing = ref(null), error = ref("");
-const routeToTab = { musteriler: "customers", araclar: "vehicles", hizmetler: "services", personel: "staff", urunler: "products" };
+const routeToTab = { cari: "customers", araclar: "vehicles", hizmetler: "services", personel: "staff", urunler: "products" };
 const tabToRoute = Object.fromEntries(Object.entries(routeToTab).map(([key, value]) => [value, key]));
 
 function syncTabFromRoute() {
@@ -92,8 +92,8 @@ const form = reactive(blank());
 const activeLabel = computed(() => tabs.find(t => t.key === activeTab.value)?.label || "Kayıt");
 const counts = computed(() => Object.fromEntries(tabs.map(t => [t.key, data[t.key].length])));
 const headers = computed(() => ({
-  customers: [{key:"name",label:"Müşteri"},{key:"phone",label:"Telefon"},{key:"email",label:"E-posta"},{key:"vehicle_count",label:"Araç"}],
-  vehicles: [{key:"plate",label:"Plaka"},{key:"customer_name",label:"Müşteri"},{key:"brand",label:"Marka"},{key:"model",label:"Model"},{key:"color",label:"Renk"}],
+  customers: [{key:"name",label:"Cari"},{key:"phone",label:"Telefon"},{key:"email",label:"E-posta"},{key:"vehicle_count",label:"Araç"}],
+  vehicles: [{key:"plate",label:"Plaka"},{key:"customer_name",label:"Cari"},{key:"brand",label:"Marka"},{key:"model",label:"Model"},{key:"color",label:"Renk"}],
   services: [{key:"name",label:"Hizmet"},{key:"price",label:"Fiyat"},{key:"duration_minutes",label:"Süre"},{key:"is_active",label:"Durum"}],
   staff: [{key:"name",label:"Personel"},{key:"phone",label:"Telefon"},{key:"role",label:"Görev"},{key:"is_active",label:"Durum"}],
   products: [{key:"name",label:"Ürün"},{key:"sku",label:"SKU"},{key:"stock_quantity",label:"Stok"},{key:"sale_price",label:"Satış"},{key:"is_active",label:"Durum"}],

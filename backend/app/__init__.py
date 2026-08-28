@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify, request, session
 from flask_cors import CORS
 
 from config.settings import Config
@@ -14,7 +14,21 @@ def create_app(config_class=Config):
     if app.config.get("SQLALCHEMY_DATABASE_URI"):
         db.init_app(app)
 
-    CORS(app, origins=app.config.get("CORS_ORIGINS", "*"))
+    CORS(app, origins=app.config.get("CORS_ORIGINS", "*"), supports_credentials=True)
+
+    @app.before_request
+    def require_admin_for_api():
+        # Authentication is intentionally limited to the management API.
+        # Public customer pages do not require a login.
+        if not request.path.startswith("/api/"):
+            return None
+        if request.method == "OPTIONS":
+            return None
+        if request.path.startswith("/api/auth/") or request.path.startswith("/api/public/") or request.path == "/api/health/db":
+            return None
+        if not session.get("is_admin"):
+            return jsonify({"error": "Yönetici girişi gerekli."}), 401
+        return None
 
     from app.routes import register_blueprints
     register_blueprints(app)

@@ -39,10 +39,10 @@
 
       <div class="dashboard-grid">
         <section class="panel appointments-panel">
-          <div class="panel-head"><div><p class="eyebrow">Günün Planı</p><h2>Randevular</h2></div><RouterLink to="/yonetim/randevu">Tümünü Gör →</RouterLink></div>
-          <div v-if="!appointments.length" class="empty"><strong>Bugün için randevu yok.</strong><span>Randevu Yönetimi'nden yeni bir randevu oluşturabilirsiniz.</span><RouterLink class="primary-link" to="/yonetim/randevu">+ Yeni Randevu</RouterLink></div>
+          <div class="panel-head"><div><p class="eyebrow">Günün Planı</p><h2>Randevular</h2></div><RouterLink to="/admin/yonetim/randevu">Tümünü Gör →</RouterLink></div>
+          <div v-if="!appointments.length" class="empty"><strong>Bugün için randevu yok.</strong><span>Randevu Yönetimi'nden yeni bir randevu oluşturabilirsiniz.</span><RouterLink class="primary-link" to="/admin/yonetim/randevu">+ Yeni Randevu</RouterLink></div>
           <div v-else class="appointment-list">
-            <RouterLink v-for="item in appointments" :key="item.id" class="appointment-row" to="/yonetim/randevu">
+            <RouterLink v-for="item in appointments" :key="item.id" class="appointment-row" to="/admin/yonetim/randevu">
               <div class="time">{{ item.time }}</div>
               <div class="appointment-main"><strong>{{ item.plate }} · {{ item.vehicle }}</strong><span>{{ item.customer }} · {{ item.services.join(' · ') }}</span></div>
               <div class="appointment-right"><strong>{{ money(item.total_price) }}</strong><span :class="['status', item.status]">{{ statusLabel(item.status) }}</span></div>
@@ -53,10 +53,10 @@
         <section class="panel actions-panel">
           <div class="panel-head"><div><p class="eyebrow">Kısayollar</p><h2>Hızlı İşlemler</h2></div></div>
           <div class="quick-actions">
-            <RouterLink to="/yonetim/randevu"><b>＋</b><span><strong>Yeni Randevu</strong><small>Takvime yeni kayıt ekle</small></span></RouterLink>
-            <RouterLink to="/yonetim/arac-takip"><b>🚗</b><span><strong>Araç Takibi</strong><small>Devam eden işleri yönet</small></span></RouterLink>
-            <RouterLink to="/yonetim/market"><b>▣</b><span><strong>Satış Ekranı</strong><small>Market satışı oluştur</small></span></RouterLink>
-            <RouterLink to="/tanimlar/hizmetler"><b>⚙</b><span><strong>Hizmet Tanımları</strong><small>Hizmet ve fiyatları yönet</small></span></RouterLink>
+            <RouterLink to="/admin/yonetim/randevu"><b>＋</b><span><strong>Yeni Randevu</strong><small>Takvime yeni kayıt ekle</small></span></RouterLink>
+            <RouterLink to="/admin/yonetim/arac-takip"><b>🚗</b><span><strong>Araç Takibi</strong><small>Devam eden işleri yönet</small></span></RouterLink>
+            <RouterLink to="/admin/yonetim/market"><b>▣</b><span><strong>Satış Ekranı</strong><small>Market satışı oluştur</small></span></RouterLink>
+            <RouterLink to="/admin/tanimlar/hizmetler"><b>⚙</b><span><strong>Hizmet Tanımları</strong><small>Hizmet ve fiyatları yönet</small></span></RouterLink>
           </div>
           <div class="mini-info"><span>Toplam müşteri</span><strong>{{ summary.customer_count }}</strong></div>
         </section>
