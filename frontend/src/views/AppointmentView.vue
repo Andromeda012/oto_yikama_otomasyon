@@ -81,6 +81,7 @@
             <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
           </select>
           <div class="row-actions">
+            <button v-if="!item.vehicle_job && item.status !== 'cancelled'" @click="startJob(item)">İşleme Al</button>
             <button @click="openEdit(item)">Düzenle</button>
             <button class="danger" @click="cancel(item.id)">İptal</button>
           </div>
@@ -138,6 +139,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { cancelAppointment, createAppointment, getAppointmentLookups, getAppointments, updateAppointment, updateAppointmentStatus } from "../services/appointments";
+import { createVehicleJobFromAppointment } from "../services/vehicleTracking";
 
 const today = new Date().toISOString().slice(0, 10);
 const selectedDate = ref(today);
@@ -183,6 +185,11 @@ function openNew() { editing.value = null; resetForm(); error.value = ""; modal.
 function openEdit(item) { editing.value = item; Object.assign(form, { date: item.start_at.slice(0, 10), time: time(item.start_at), customer_id: item.customer.id, vehicle_id: item.vehicle.id, service_ids: item.services.map(s => s.id), status: item.status, notes: item.notes }); error.value = ""; modal.value = true; }
 function moveDate(days) { const d = new Date(`${selectedDate.value}T12:00:00`); d.setDate(d.getDate() + days); selectedDate.value = d.toISOString().slice(0, 10); loadAppointments(); }
 function goToday() { selectedDate.value = today; loadAppointments(); }
+
+async function startJob(item) {
+  if (!confirm(`${item.vehicle.plate} plakalı aracı işleme almak istiyor musunuz?`)) return;
+  try { await createVehicleJobFromAppointment(item.id); await loadAppointments(); } catch (e) { error.value = e.message; }
+}
 
 async function loadAppointments() {
   loading.value = true; error.value = "";

@@ -56,8 +56,15 @@ def dashboard_summary():
         Appointment.status.in_(["scheduled", "arrived"]),
     ).count()
 
-    active_jobs = VehicleJob.query.filter(VehicleJob.status.in_(ACTIVE_JOB_STATUSES)).count()
-    inspection_jobs = VehicleJob.query.filter(VehicleJob.status == "quality_check").count()
+    job_query = VehicleJob.query.filter(
+        VehicleJob.created_at >= start,
+        VehicleJob.created_at < end,
+    )
+    active_jobs = job_query.filter(VehicleJob.status.in_(ACTIVE_JOB_STATUSES)).count()
+    waiting_jobs = job_query.filter(VehicleJob.status.in_(["waiting", "checked_in"])).count()
+    washing_jobs = job_query.filter(VehicleJob.status == "washing").count()
+    ready_jobs = job_query.filter(VehicleJob.status == "ready").count()
+    inspection_jobs = job_query.filter(VehicleJob.status == "quality_check").count()
 
     market_revenue = db.session.query(func.coalesce(func.sum(Sale.total_amount), 0)).filter(
         Sale.created_at >= start,
@@ -92,6 +99,9 @@ def dashboard_summary():
             "appointment_count": appointment_count,
             "waiting_appointments": waiting_appointments,
             "active_jobs": active_jobs,
+            "waiting_jobs": waiting_jobs,
+            "washing_jobs": washing_jobs,
+            "ready_jobs": ready_jobs,
             "inspection_jobs": inspection_jobs,
             "today_revenue": float(market_revenue) + float(service_revenue),
             "market_revenue": float(market_revenue),

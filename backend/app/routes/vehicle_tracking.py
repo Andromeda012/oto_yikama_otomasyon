@@ -1,12 +1,14 @@
+from collections import defaultdict
+from decimal import Decimal
 from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.extensions import db
 from app.models import (
-    Appointment, AppointmentService, Customer, Service, Staff, Vehicle,
+    Appointment, AppointmentService, Customer, Product, Service, Staff, Vehicle,
     VehicleJob, VehicleJobService, VehicleJobStatusHistory,
-    Sale, SaleItem, AccountTransaction,
+    Sale, SaleItem, AccountTransaction, StockMovement,
 )
 
 vehicle_tracking_bp = Blueprint("vehicle_tracking_api", __name__, url_prefix="/api/vehicle-tracking")
@@ -335,6 +337,36 @@ def create_delivery_sale(job):
         return existing
 
     total = sum((float(item.price) for item in job.services), 0.0)
+
+    # Consume mapped service materials exactly once, as part of the same transaction.
+    material_requirements = defaultdict(Decimal)
+    for job_service in job.services:
+        for material in job_service.service.materials:
+            material_requirements[material.product_id] += Decimal(material.quantity or 0)
+    if material_requirements:
+        products = Product.query.filter(Product.id.in_(list(material_requirements.keys())), Product.is_active.is_(True)).with_for_update().all()
+        product_map = {product.id: product for product in products}
+        if len(product_map) != len(material_requirements):
+            raise ValueError("Hizmet malzemelerinden biri bulunamadı veya pasif.")
+        for product_id, required in material_requirements.items():
+            product = product_map[product_id]
+            before = Decimal(product.stock_quantity or 0)
+            if before < required:
+                raise ValueError(f"{product.name} için hizmet tüketimi sonrası yeterli stok yok. Gerekli: {required:g} {product.unit}, mevcut: {before:g} {product.unit}.")
+        for product_id, required in material_requirements.items():
+            product = product_map[product_id]
+            before = Decimal(product.stock_quantity or 0)
+            after = before - required
+            product.stock_quantity = after
+            db.session.add(StockMovement(
+                product_id=product.id,
+                movement_type="service_consumption",
+                quantity=required,
+                stock_before=before,
+                stock_after=after,
+                description=f"İş emri #{job.id} - hizmet tüketimi",
+            ))
+
     sale = Sale(
         customer_id=job.customer_id,
         staff_id=job.staff_id,
@@ -410,15 +442,21 @@ def mark_paid(job_id):
         return jsonify({"error": "Bu iş emrine ait satış kaydı bulunamadı."}), 400
     if sale.payment_status == "paid":
         return jsonify({"message": "Satış zaten ödenmiş.", "sale_id": sale.id, "payment_status": sale.payment_status})
+    data = request.get_json() or {}
+    payment_method = data.get("payment_method") or "cash"
+    if payment_method not in {"cash", "card", "transfer", "other"}:
+        return jsonify({"error": "Geçersiz ödeme yöntemi."}), 400
     try:
         sale.payment_status = "paid"
+        sale.payment_method = payment_method
+        labels = {"cash": "Nakit", "card": "Kart", "transfer": "Havale/EFT", "other": "Diğer"}
         db.session.add(AccountTransaction(
             customer_id=job.customer_id,
             sale_id=sale.id,
             vehicle_job_id=job.id,
             transaction_type="payment",
             amount=sale.total_amount,
-            description=f"Araç hizmeti #{job.id} ödeme - {job.vehicle.plate}",
+            description=f"Araç hizmeti #{job.id} ödeme - {job.vehicle.plate} - {labels[payment_method]}",
         ))
         db.session.commit()
         return jsonify({"sale_id": sale.id, "payment_status": sale.payment_status})
@@ -451,6 +489,8 @@ def update_status(job_id):
         apply_timestamps(job, status, previous)
         add_history(job, status, data.get("note"))
         sync_appointment_status(job, status)
+        if status == "delivered":
+            create_delivery_sale(job)
         db.session.commit()
         return jsonify(serialize(job))
     except (ValueError, TypeError):

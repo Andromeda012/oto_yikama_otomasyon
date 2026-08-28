@@ -83,3 +83,7 @@ npm run dev
 ```
 
 For local development, configure the frontend API base URL if the Vite app and Flask server run on different origins.
+
+## Phase 2 database migration
+
+After deploying Phase 2, run `backend/migrations/009_service_stock_and_indexes.sql` once against the external MySQL database. This creates the `service_products` table used to map service consumption to stock. Existing tables and data are not recreated.

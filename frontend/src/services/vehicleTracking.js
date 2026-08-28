@@ -46,6 +46,12 @@ export async function getVehicleJobFinancial(id) {
   return parseResponse(await apiFetch(`/api/vehicle-tracking/${id}/financial`), "Finansal bilgiler alınamadı.");
 }
 
-export async function markVehicleJobPaid(id) {
-  return parseResponse(await apiFetch(`/api/vehicle-tracking/${id}/payment`, { method: "PATCH" }), "Ödeme kaydedilemedi.");
+export async function markVehicleJobPaid(id, paymentMethod = "cash") {
+  return parseResponse(
+    await apiFetch(`/api/vehicle-tracking/${id}/payment`, {
+      method: "PATCH",
+      body: JSON.stringify({ payment_method: paymentMethod }),
+    }),
+    "Ödeme kaydedilemedi."
+  );
 }

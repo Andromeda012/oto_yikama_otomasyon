@@ -14,6 +14,10 @@ export function getAccountCustomers(search = "") {
   return request(`/api/accounts/customers?${params}`);
 }
 export function getAccountCustomer(id) { return request(`/api/accounts/customers/${id}`); }
+export function quickSearchAccounts(query = "") {
+  const params = new URLSearchParams({ q: query });
+  return request(`/api/accounts/quick-search?${params}`);
+}
 export function getAccountTransactions(customerId = "") {
   const params = new URLSearchParams({ limit: "100" });
   if (customerId) params.set("customer_id", customerId);

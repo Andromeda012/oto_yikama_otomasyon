@@ -107,6 +107,25 @@ def summary():
     })
 
 
+@market_bp.get("/stock-movements")
+def stock_movements():
+    limit = min(max(int(request.args.get("limit", 50)), 1), 200)
+    movements = StockMovement.query.order_by(StockMovement.created_at.desc(), StockMovement.id.desc()).limit(limit).all()
+    return jsonify([{
+        "id": item.id,
+        "product_id": item.product_id,
+        "product_name": item.product.name,
+        "unit": item.product.unit,
+        "sale_id": item.sale_id,
+        "movement_type": item.movement_type,
+        "quantity": float(item.quantity),
+        "stock_before": float(item.stock_before),
+        "stock_after": float(item.stock_after),
+        "description": item.description or "",
+        "created_at": item.created_at.isoformat(),
+    } for item in movements])
+
+
 @market_bp.post("/sales")
 def create_sale():
     data = request.get_json() or {}

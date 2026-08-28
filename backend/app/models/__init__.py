@@ -5,7 +5,7 @@ from app.models.entities import (
     Customer,
     Product,
     Sale,
-    Service,
+    Service, ServiceProduct,
     Staff,
     Vehicle,
     VehicleJob, VehicleJobService, VehicleJobStatusHistory, StockMovement, CompanyProfile, SystemSettings,

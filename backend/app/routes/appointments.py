@@ -50,6 +50,10 @@ def serialize(a):
         ],
         "total_price": total_price,
         "total_duration_minutes": total_duration,
+        "vehicle_job": ({
+            "id": a.vehicle_job.id,
+            "status": a.vehicle_job.status,
+        } if getattr(a, "vehicle_job", None) else None),
     }
 
 

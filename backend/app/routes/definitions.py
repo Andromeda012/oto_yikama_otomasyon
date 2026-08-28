@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
-from app.models import Customer, Product, Service, Staff, Vehicle
+from app.models import Customer, Product, Service, ServiceProduct, Staff, Vehicle
 
 definitions_bp = Blueprint("definitions_api", __name__, url_prefix="/api/definitions")
 
@@ -41,11 +41,40 @@ def vehicle_json(v):
 
 
 def service_json(s):
+    materials = sorted(s.materials, key=lambda x: x.product.name.lower())
     return {
         "id": s.id, "name": s.name, "price": float(s.price),
         "duration_minutes": s.duration_minutes, "is_active": s.is_active,
         "description": s.description or "",
+        "materials": [{
+            "product_id": item.product_id,
+            "product_name": item.product.name,
+            "unit": item.product.unit,
+            "quantity": float(item.quantity),
+        } for item in materials],
     }
+
+
+def _save_service_materials(service, raw_materials):
+    if raw_materials is None:
+        return
+    if not isinstance(raw_materials, list):
+        raise ValueError("Malzeme listesi geçersiz.")
+    service.materials.clear()
+    seen = set()
+    for raw in raw_materials:
+        try:
+            product_id = int(raw.get("product_id"))
+            quantity = _decimal(raw.get("quantity", 0), "quantity")
+        except (AttributeError, ValueError, TypeError):
+            raise ValueError("Hizmet malzemesi geçersiz.")
+        if quantity <= 0 or product_id in seen:
+            raise ValueError("Hizmet malzemeleri ve miktarlarını kontrol edin.")
+        product = db.session.get(Product, product_id)
+        if not product or not product.is_active:
+            raise ValueError("Hizmette seçilen ürün bulunamadı veya pasif.")
+        seen.add(product_id)
+        service.materials.append(ServiceProduct(product_id=product_id, quantity=quantity))
 
 
 def staff_json(s):
@@ -183,9 +212,12 @@ def create_service():
         s = Service(name=name, price=_decimal(data.get("price", 0), "price"), duration_minutes=int(data.get("duration_minutes", 30)), is_active=bool(data.get("is_active", True)), description=data.get("description"))
         if s.duration_minutes <= 0:
             raise ValueError
+        db.session.add(s)
+        db.session.flush()
+        _save_service_materials(s, data.get("materials"))
     except (ValueError, TypeError):
-        return _json_error("Fiyat ve süre değerlerini kontrol edin.")
-    db.session.add(s)
+        db.session.rollback()
+        return _json_error("Fiyat, süre ve malzeme değerlerini kontrol edin.")
     try:
         db.session.commit()
     except IntegrityError:
@@ -208,14 +240,38 @@ def update_service(item_id):
         s.description = data.get("description")
         if not s.name or s.duration_minutes <= 0:
             raise ValueError
+        _save_service_materials(s, data.get("materials"))
     except (ValueError, TypeError):
-        return _json_error("Hizmet bilgilerini kontrol edin.")
+        db.session.rollback()
+        return _json_error("Hizmet bilgilerini ve malzemelerini kontrol edin.")
     try:
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
         return _json_error("Bu hizmet adı zaten kayıtlı.", 409)
     return jsonify(service_json(s))
+
+
+@definitions_bp.get("/services/<int:item_id>/materials")
+def get_service_materials(item_id):
+    service = db.session.get(Service, item_id)
+    if not service:
+        return _json_error("Hizmet bulunamadı.", 404)
+    return jsonify(service_json(service)["materials"])
+
+
+@definitions_bp.put("/services/<int:item_id>/materials")
+def update_service_materials(item_id):
+    service = db.session.get(Service, item_id)
+    if not service:
+        return _json_error("Hizmet bulunamadı.", 404)
+    try:
+        _save_service_materials(service, (request.get_json() or {}).get("materials", []))
+        db.session.commit()
+    except (ValueError, TypeError):
+        db.session.rollback()
+        return _json_error("Hizmet malzemelerini kontrol edin.")
+    return jsonify(service_json(service)["materials"])
 
 
 @definitions_bp.delete("/services/<int:item_id>")

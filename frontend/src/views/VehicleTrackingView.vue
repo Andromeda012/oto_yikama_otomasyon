@@ -117,6 +117,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { createVehicleJob, createVehicleJobFromAppointment, getAvailableAppointments, getVehicleJobHistory, getVehicleTrackingLookups, getVehicleJobs, markVehicleJobPaid, updateVehicleJob, updateVehicleJobStatus } from "../services/vehicleTracking";
 
+const route = useRoute();
 const today = new Date().toISOString().slice(0, 10);
 const selectedDate = ref(today), statusFilter = ref(""), jobs = ref([]), loading = ref(false), error = ref(""), saving = ref(false);
 const modal = ref(false), editing = ref(null), appointmentModal = ref(false), appointmentLoading = ref(false), availableAppointments = ref([]), historyModal = ref(false), historyJob = ref(null), history = ref([]), historyLoading = ref(false);
@@ -148,8 +149,21 @@ async function changeStatus(job, status) { const previous = job.status; job.stat
 async function openAppointments() { appointmentModal.value = true; appointmentLoading.value = true; error.value = ""; try { availableAppointments.value = await getAvailableAppointments(selectedDate.value); } catch (e) { error.value = e.message; } finally { appointmentLoading.value = false; } }
 async function startAppointment(id) { try { await createVehicleJobFromAppointment(id); appointmentModal.value = false; await loadJobs(); } catch (e) { error.value = e.message; } }
 async function openHistory(job) { historyJob.value = job; history.value = []; historyModal.value = true; historyLoading.value = true; try { history.value = await getVehicleJobHistory(job.id); } catch (e) { error.value = e.message; } finally { historyLoading.value = false; } }
-async function markPaid(job) { if (!confirm("Bu iş emrinin ödemesini alınmış olarak işaretlemek istiyor musunuz?")) return; try { await markVehicleJobPaid(job.id); job.financial.payment_status = "paid"; } catch (e) { error.value = e.message; } }
-onMounted(async () => { try { Object.assign(lookups, await getVehicleTrackingLookups()); await loadJobs(); } catch (e) { error.value = e.message; } });
+async function markPaid(job) {
+  const method = window.prompt("Ödeme yöntemi: cash = Nakit, card = Kart, transfer = Havale/EFT, other = Diğer", "cash");
+  if (!method) return;
+  const normalized = method.trim().toLowerCase();
+  if (!["cash", "card", "transfer", "other"].includes(normalized)) { error.value = "Geçersiz ödeme yöntemi."; return; }
+  if (!confirm("Bu iş emrinin ödemesini alınmış olarak işaretlemek istiyor musunuz?")) return;
+  try { await markVehicleJobPaid(job.id, normalized); job.financial.payment_status = "paid"; job.financial.payment_method = normalized; } catch (e) { error.value = e.message; }
+}
+onMounted(async () => {
+  try {
+    Object.assign(lookups, await getVehicleTrackingLookups());
+    await loadJobs();
+    if (route.query.new === "1") openNew();
+  } catch (e) { error.value = e.message; }
+});
 </script>
 
 <style scoped>

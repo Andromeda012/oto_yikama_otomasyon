@@ -4,7 +4,7 @@ from sqlalchemy import func, or_
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.extensions import db
-from app.models import AccountTransaction, Customer, Sale
+from app.models import AccountTransaction, Customer, Sale, Vehicle, VehicleJob
 
 accounts_bp = Blueprint("accounts_api", __name__, url_prefix="/api/accounts")
 
@@ -107,8 +107,13 @@ def customer_detail(customer_id):
         Sale.created_at.desc()
     ).limit(30).all()
 
+    jobs = VehicleJob.query.filter_by(customer_id=customer_id).order_by(VehicleJob.created_at.desc()).limit(30).all()
     return jsonify({
         "customer": customer_json(customer),
+        "vehicles": [{
+            "id": vehicle.id, "plate": vehicle.plate, "brand": vehicle.brand or "",
+            "model": vehicle.model or "", "year": vehicle.year, "color": vehicle.color or "",
+        } for vehicle in customer.vehicles],
         "transactions": [transaction_json(item) for item in transactions],
         "sales": [{
             "id": sale.id,
@@ -117,7 +122,35 @@ def customer_detail(customer_id):
             "payment_method": sale.payment_method,
             "created_at": sale.created_at.isoformat(),
         } for sale in sales],
+        "jobs": [{
+            "id": job.id,
+            "plate": job.vehicle.plate,
+            "vehicle": " ".join(x for x in [job.vehicle.brand, job.vehicle.model] if x) or "Araç",
+            "status": job.status,
+            "created_at": job.created_at.isoformat(),
+            "delivered_at": job.delivered_at.isoformat() if job.delivered_at else None,
+            "services": [{"name": item.service.name, "price": money(item.price)} for item in job.services],
+            "total": sum((money(item.price) for item in job.services), 0),
+        } for job in jobs],
     })
+
+
+@accounts_bp.get("/quick-search")
+def quick_search():
+    query_text = (request.args.get("q") or "").strip()
+    if len(query_text) < 2:
+        return jsonify([])
+    like = f"%{query_text}%"
+    vehicles = Vehicle.query.join(Customer).filter(or_(
+        Vehicle.plate.ilike(like), Customer.first_name.ilike(like),
+        Customer.last_name.ilike(like), Customer.phone.ilike(like),
+    )).order_by(Vehicle.plate.asc()).limit(12).all()
+    return jsonify([{
+        "vehicle_id": v.id, "customer_id": v.customer_id, "plate": v.plate,
+        "vehicle": " ".join(x for x in [v.brand, v.model] if x) or "Araç",
+        "customer": f"{v.customer.first_name} {v.customer.last_name}",
+        "phone": v.customer.phone,
+    } for v in vehicles])
 
 
 @accounts_bp.get("/transactions")

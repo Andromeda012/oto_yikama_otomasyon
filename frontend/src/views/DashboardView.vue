@@ -25,7 +25,7 @@
         </article>
         <article class="stat-card">
           <div class="stat-icon">🚗</div>
-          <div><span>Aktif Araçlar</span><strong>{{ summary.active_jobs }}</strong><small>{{ summary.inspection_jobs }} kontrol aşamasında</small></div>
+          <div><span>Aktif İş Emirleri</span><strong>{{ summary.active_jobs }}</strong><small>{{ summary.waiting_jobs }} bekliyor · {{ summary.washing_jobs }} yıkamada · {{ summary.ready_jobs }} hazır</small></div>
         </article>
         <article class="stat-card revenue">
           <div class="stat-icon">₺</div>
@@ -54,6 +54,7 @@
           <div class="panel-head"><div><p class="eyebrow">Kısayollar</p><h2>Hızlı İşlemler</h2></div></div>
           <div class="quick-actions">
             <RouterLink to="/admin/yonetim/randevu"><b>＋</b><span><strong>Yeni Randevu</strong><small>Takvime yeni kayıt ekle</small></span></RouterLink>
+            <RouterLink to="/admin/yonetim/arac-takip?new=1"><b>🚘</b><span><strong>Yeni İş Emri</strong><small>Gelen aracı hemen işleme al</small></span></RouterLink>
             <RouterLink to="/admin/yonetim/arac-takip"><b>🚗</b><span><strong>Araç Takibi</strong><small>Devam eden işleri yönet</small></span></RouterLink>
             <RouterLink to="/admin/yonetim/market"><b>▣</b><span><strong>Satış Ekranı</strong><small>Market satışı oluştur</small></span></RouterLink>
             <RouterLink to="/admin/tanimlar/hizmetler"><b>⚙</b><span><strong>Hizmet Tanımları</strong><small>Hizmet ve fiyatları yönet</small></span></RouterLink>
@@ -74,7 +75,7 @@ const today = () => new Date().toLocaleDateString("en-CA");
 const selectedDate = ref(today());
 const loading = ref(true);
 const error = ref("");
-const summary = ref({ appointment_count: 0, waiting_appointments: 0, active_jobs: 0, inspection_jobs: 0, today_revenue: 0, market_revenue: 0, service_revenue: 0, low_stock_count: 0, customer_count: 0 });
+const summary = ref({ appointment_count: 0, waiting_appointments: 0, active_jobs: 0, waiting_jobs: 0, washing_jobs: 0, ready_jobs: 0, inspection_jobs: 0, today_revenue: 0, market_revenue: 0, service_revenue: 0, low_stock_count: 0, customer_count: 0 });
 const appointments = ref([]);
 
 function money(value) { return `${Number(value || 0).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`; }

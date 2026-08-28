@@ -30,3 +30,7 @@ export async function createMarketSale(payload) {
     "Satış kaydedilemedi."
   );
 }
+
+export async function getStockMovements(limit = 50) {
+  return parseResponse(await apiFetch(`/api/market/stock-movements?limit=${limit}`), "Stok hareketleri alınamadı.");
+}

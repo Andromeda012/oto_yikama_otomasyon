@@ -37,6 +37,16 @@ class Service(db.Model):
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    materials = db.relationship("ServiceProduct", back_populates="service", cascade="all, delete-orphan")
+
+
+class ServiceProduct(db.Model):
+    __tablename__ = "service_products"
+    service_id = db.Column(db.Integer, db.ForeignKey("services.id", ondelete="CASCADE"), primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id", ondelete="RESTRICT"), primary_key=True)
+    quantity = db.Column(db.Numeric(12, 3), nullable=False)
+    service = db.relationship("Service", back_populates="materials")
+    product = db.relationship("Product")
 
 
 class Staff(db.Model):
