@@ -115,6 +115,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
+import { useRoute } from "vue-router";
 import { createVehicleJob, createVehicleJobFromAppointment, getAvailableAppointments, getVehicleJobHistory, getVehicleTrackingLookups, getVehicleJobs, markVehicleJobPaid, updateVehicleJob, updateVehicleJobStatus } from "../services/vehicleTracking";
 
 const route = useRoute();
